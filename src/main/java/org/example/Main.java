@@ -4,28 +4,48 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        HikariConfig config = new HikariConfig(); //this is just a settings object.
+        HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:postgresql://localhost:5432/urlshortener");
         config.setUsername("devuser");
         config.setPassword("devpass");
 
-        HikariDataSource dataSource = new HikariDataSource(config); //immediately opens a batch of real connections to Postgres and holds them ready.
+        HikariDataSource dataSource = new HikariDataSource(config);
 
-        try (Connection conn = dataSource.getConnection(); //doesn't open a new connection, it borrows one from the pool that's already open.
-             Statement stmt = conn.createStatement(); //a Statement is how you send SQL text to the database
-                                                      //use PreparedStatement instead, not Statement — Statement concatenates raw strings into SQL, which is exactly how SQL injection happens.
-             ResultSet rs = stmt.executeQuery("SELECT 1")) { //sends the query, gets back a cursor over the result rows. ResultSet doesn't hand you all the data at once — you step through it row by row with .next().
+        // Insert with ON CONFLICT DO NOTHING
+        String insertSql = "INSERT INTO urls (short_code, long_url) VALUES (?, ?) ON CONFLICT (short_code) DO NOTHING";
 
-            if (rs.next()) { //.next() advances the cursor to the first row and returns true if a row exists.
-                System.out.println("Connected. Result: " + rs.getInt(1)); //rs.getInt(1) reads column 1 (1-indexed, not 0-indexed
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+
+            stmt.setString(1, "xyz789");
+            stmt.setString(2, "https://openai.com");
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Rows inserted: " + rowsAffected);
+        }
+
+        // Select it back
+        String selectSql = "SELECT long_url FROM urls WHERE short_code = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(selectSql)) {
+
+            stmt.setString(1, "xyz789");
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println("Found URL: " + rs.getString("long_url"));
+                } else {
+                    System.out.println("No URL found for that code.");
+                }
             }
         }
 
-        dataSource.close();
+        Runtime.getRuntime().addShutdownHook(new Thread(dataSource::close));
     }
 }
