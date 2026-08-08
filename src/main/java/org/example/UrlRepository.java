@@ -43,4 +43,18 @@ public class UrlRepository {
             throw new RuntimeException(e);
         }
     }
+
+    public Optional<String> findByLongUrl(String longUrl) {
+        String sql = "SELECT short_url FROM urls WHERE long_url = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, longUrl);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return Optional.of(rs.getString("short_url"));
+                else return Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
