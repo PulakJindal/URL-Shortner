@@ -16,6 +16,14 @@ public class UrlController {
 
     public void create(Context ctx){
         ShortenReq req = ctx.bodyAsClass(ShortenReq.class);
+        if(req.url == null || req.url.isBlank()){
+            ctx.status(400).json(Map.of("error", "url is required"));
+            return;
+        }
+        else if(!req.url.startsWith("http://") && !req.url.startsWith("https://")){
+            ctx.status(400).json(Map.of("error", "not a valid url"));
+            return;
+        }
         String code = service.createShortUrl(req.url, repo);
         ctx.json(Map.of("shortUrl", "http://localhost:7070/"+code));
     }
