@@ -14,17 +14,20 @@ public class UrlRepository {
         this.dataSource = dataSource;
     }
 
-    public boolean insert(String shortCode, String longUrl){
-        String sql = "INSERT INTO urls (short_code, long_url) VALUES (?, ?) ON CONFLICT (short_code) DO NOTHING";
+    public Optional<String> insertIfNotExists(String shortCode, String longUrl){
+        String sql = "INSERT INTO urls (short_code, long_url) VALUES (?, ?) ON CONFLICT (short_code) DO NOTHING RETURNING short_code";
         try(Connection conn = dataSource.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1, shortCode);
             stmt.setString(2, longUrl);
 
-            int rowAffected = stmt.executeUpdate();
-            return rowAffected > 0;
+            try(ResultSet rs = stmt.executeQuery()){
+                if(rs.next()) return Optional.of(rs.getString("short_code"));
+                return Optional.empty();
+            }
         }catch(SQLException e){
-            throw new RuntimeException((e));
+            if("23505".equals((e.getSQLState()))) return findByLongUrl(longUrl);
+            throw new RuntimeException(e);
         }
     }
 
@@ -45,12 +48,12 @@ public class UrlRepository {
     }
 
     public Optional<String> findByLongUrl(String longUrl) {
-        String sql = "SELECT short_url FROM urls WHERE long_url = ?";
+        String sql = "SELECT short_code FROM urls WHERE long_url = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, longUrl);
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) return Optional.of(rs.getString("short_url"));
+                if (rs.next()) return Optional.of(rs.getString("short_code"));
                 else return Optional.empty();
             }
         } catch (SQLException e) {

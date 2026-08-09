@@ -20,7 +20,7 @@ public class UrlController {
             ctx.status(400).json(Map.of("error", "url is required"));
             return;
         }
-        else if(!req.url.startsWith("http://") && !req.url.startsWith("https://")){
+        if(!req.url.startsWith("http://") && !req.url.startsWith("https://")){
             ctx.status(400).json(Map.of("error", "not a valid url"));
             return;
         }

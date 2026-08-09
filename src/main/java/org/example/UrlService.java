@@ -1,6 +1,7 @@
 package org.example;
 
 import java.security.SecureRandom;
+import java.util.Optional;
 
 public class UrlService {
     private static final String ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQURSTUVWXYZ1234567890";
@@ -19,8 +20,8 @@ public class UrlService {
         int maxAttempts = 5;
         for(int i=0; i<maxAttempts; i++){
             String code = generateShortCode(7);
-            boolean inserted = repo.insert(code, longUrl);
-            if(inserted) return code;
+            Optional<String> inserted = repo.insertIfNotExists(code, longUrl);
+            if(inserted.isPresent()) return inserted.get();
         }
         throw new RuntimeException("Failed to generate a unique short code after " + maxAttempts + " attempts");
     }
