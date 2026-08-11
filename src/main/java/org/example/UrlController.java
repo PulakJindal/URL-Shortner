@@ -2,6 +2,7 @@ package org.example;
 
 import io.javalin.http.Context;
 
+import java.sql.SQLOutput;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -38,7 +39,12 @@ public class UrlController {
         if(recordO.isPresent()) {
             UrlRecord record = recordO.get();
             if(record.expiresAt != null && record.expiresAt.isBefore(OffsetDateTime.now())) ctx.status(410);
-            else ctx.redirect(record.longUrl);
+            else {
+                boolean incremented = repo.incrementClickCount(code);
+                if(incremented) System.out.println("Increment Done");
+                else System.out.println("Increment failed");
+                ctx.redirect(record.longUrl);
+            }
         }
         else ctx.status(404);
     }
