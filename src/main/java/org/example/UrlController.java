@@ -40,9 +40,7 @@ public class UrlController {
             UrlRecord record = recordO.get();
             if(record.expiresAt != null && record.expiresAt.isBefore(OffsetDateTime.now())) ctx.status(410);
             else {
-                boolean incremented = repo.incrementClickCount(code);
-                if(incremented) System.out.println("Increment Done");
-                else System.out.println("Increment failed");
+                repo.incrementClickCount(code);
                 ctx.redirect(record.longUrl);
             }
         }

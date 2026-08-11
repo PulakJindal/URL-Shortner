@@ -69,13 +69,11 @@ public class UrlRepository {
             throw new RuntimeException(e);
         }
     }
-    public boolean incrementClickCount(String shortCode){
+    public void incrementClickCount(String shortCode){
         String sql = "UPDATE urls SET click_count = click_count + 1 WHERE short_code = ?";
         try(Connection conn = dataSource.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1, shortCode);
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
         }
         catch (SQLException e) {
             throw new RuntimeException(e);
