@@ -2,8 +2,8 @@ package org.example;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
 import javax.sql.DataSource;
+import static org.example.EnvUtil.getEnvOrDefault;
 
 public class Database {
     private static final HikariDataSource dataSource;
@@ -17,10 +17,6 @@ public class Database {
         dataSource = new HikariDataSource(config); //opens a batch of real connections to Postgres and holds them ready
 
         Runtime.getRuntime().addShutdownHook(new Thread(dataSource::close));
-    }
-    private static String getEnvOrDefault(String key, String defaultValue) {
-        String value = System.getenv(key);
-        return value != null ? value : defaultValue;
     }
     public static DataSource getDataSource(){
         return dataSource;

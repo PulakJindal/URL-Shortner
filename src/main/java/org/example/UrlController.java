@@ -1,11 +1,10 @@
 package org.example;
 
 import io.javalin.http.Context;
-
-import java.sql.SQLOutput;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
+import static org.example.EnvUtil.getEnvOrDefault;
 
 public class UrlController {
     private final UrlRepository repo;
@@ -30,7 +29,7 @@ public class UrlController {
                 ? OffsetDateTime.now().plusSeconds(req.expiresInSecond)
                 : null;
         String code = service.createShortUrl(req.url, expiresAt, repo);
-        ctx.json(Map.of("shortUrl", "http://localhost:7070/"+code));
+        ctx.json(Map.of("shortUrl", getEnvOrDefault("BASE_URL", "http://localhost:7070")+code));
     }
 
     public void redirect(Context ctx){
