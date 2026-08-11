@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 public class UrlRepository {
@@ -14,12 +15,17 @@ public class UrlRepository {
         this.dataSource = dataSource;
     }
 
-    public Optional<String> insertIfNotExists(String shortCode, String longUrl){
-        String sql = "INSERT INTO urls (short_code, long_url) VALUES (?, ?) ON CONFLICT (short_code) DO NOTHING RETURNING short_code";
+    public Optional<String> insertIfNotExists(String shortCode, String longUrl, OffsetDateTime expireTime){
+        String sql = "INSERT INTO urls (short_code, long_url, expires_at) VALUES (?, ?, ?) ON CONFLICT (short_code) DO NOTHING RETURNING short_code";
         try(Connection conn = dataSource.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1, shortCode);
             stmt.setString(2, longUrl);
+            if (expireTime != null) {
+                stmt.setObject(3, expireTime);
+            } else {
+                stmt.setNull(3, java.sql.Types.TIMESTAMP_WITH_TIMEZONE);
+            }
 
             try(ResultSet rs = stmt.executeQuery()){
                 if(rs.next()) return Optional.of(rs.getString("short_code"));
@@ -31,14 +37,17 @@ public class UrlRepository {
         }
     }
 
-    public Optional<String> findByShortCode(String shortCode){
-        String sql = "SELECT long_url FROM urls WHERE short_code = ?";
+    public Optional<UrlRecord> findByShortCode(String shortCode){
+        String sql = "SELECT long_url, expires_at FROM urls WHERE short_code = ?";
         try(Connection conn = dataSource.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1, shortCode);
             try(ResultSet rs = stmt.executeQuery()){
                 if(rs.next()){
-                    return Optional.of(rs.getString("long_url"));
+                    UrlRecord record = new UrlRecord();
+                    record.longUrl = rs.getString("long_url");
+                    record.expiresAt = rs.getObject("expires_at", OffsetDateTime.class);
+                    return Optional.of(record);
                 }
                 return Optional.empty();
             }

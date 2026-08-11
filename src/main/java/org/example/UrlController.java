@@ -2,6 +2,7 @@ package org.example;
 
 import io.javalin.http.Context;
 
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -24,14 +25,21 @@ public class UrlController {
             ctx.status(400).json(Map.of("error", "not a valid url"));
             return;
         }
-        String code = service.createShortUrl(req.url, repo);
+        OffsetDateTime expiresAt = req.expiresInSecond != null
+                ? OffsetDateTime.now().plusSeconds(req.expiresInSecond)
+                : null;
+        String code = service.createShortUrl(req.url, expiresAt, repo);
         ctx.json(Map.of("shortUrl", "http://localhost:7070/"+code));
     }
 
     public void redirect(Context ctx){
         String code = ctx.pathParam("code");
-        Optional<String> longUrl = repo.findByShortCode(code);
-        if(longUrl.isPresent()) ctx.redirect(longUrl.get());
+        Optional<UrlRecord> recordO = repo.findByShortCode(code);
+        if(recordO.isPresent()) {
+            UrlRecord record = recordO.get();
+            if(record.expiresAt != null && record.expiresAt.isBefore(OffsetDateTime.now())) ctx.status(410);
+            else ctx.redirect(record.longUrl);
+        }
         else ctx.status(404);
     }
 }

@@ -1,6 +1,7 @@
 package org.example;
 
 import java.security.SecureRandom;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 public class UrlService {
@@ -16,11 +17,11 @@ public class UrlService {
         return sb.toString();
     }
 
-    public String createShortUrl(String longUrl, UrlRepository repo){
+    public String createShortUrl(String longUrl, OffsetDateTime expiryTime, UrlRepository repo){
         int maxAttempts = 5;
         for(int i=0; i<maxAttempts; i++){
             String code = generateShortCode(7);
-            Optional<String> inserted = repo.insertIfNotExists(code, longUrl);
+            Optional<String> inserted = repo.insertIfNotExists(code, longUrl, expiryTime);
             if(inserted.isPresent()) return inserted.get();
         }
         throw new RuntimeException("Failed to generate a unique short code after " + maxAttempts + " attempts");
