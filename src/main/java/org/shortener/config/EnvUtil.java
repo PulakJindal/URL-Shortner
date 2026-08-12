@@ -1,4 +1,4 @@
-package org.shortener;
+package org.shortener.config;
 
 public final class EnvUtil {
     private EnvUtil(){};

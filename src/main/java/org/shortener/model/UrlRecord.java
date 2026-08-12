@@ -1,4 +1,4 @@
-package org.shortener;
+package org.shortener.model;
 
 import java.time.OffsetDateTime;
 

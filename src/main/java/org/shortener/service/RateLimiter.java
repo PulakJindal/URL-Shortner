@@ -1,4 +1,4 @@
-package org.shortener;
+package org.shortener.service;
 
 import java.time.Duration;
 import java.time.Instant;

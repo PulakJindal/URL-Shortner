@@ -1,4 +1,4 @@
-package org.shortener;
+package org.shortener.web;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;

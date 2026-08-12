@@ -1,4 +1,4 @@
-package org.shortener;
+package org.shortener.model;
 
 public class ShortenReq {
     public String url;

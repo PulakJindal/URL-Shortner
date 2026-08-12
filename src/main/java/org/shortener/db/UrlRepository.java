@@ -1,7 +1,9 @@
-package org.shortener;
+package org.shortener.db;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.shortener.model.UrlRecord;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

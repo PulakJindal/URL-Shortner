@@ -1,6 +1,12 @@
 package org.shortener;
 
 import io.javalin.Javalin;
+import org.shortener.db.Database;
+import org.shortener.db.UrlRepository;
+import org.shortener.service.RateLimiter;
+import org.shortener.service.UrlService;
+import org.shortener.web.HomeHandler;
+import org.shortener.web.UrlController;
 
 public class Main {
      public static void main(String[] args) throws Exception {
