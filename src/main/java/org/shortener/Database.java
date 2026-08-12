@@ -1,9 +1,9 @@
-package org.example;
+package org.shortener;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
-import static org.example.EnvUtil.getEnvOrDefault;
+import static org.shortener.EnvUtil.getEnvOrDefault;
 
 public class Database {
     private static final HikariDataSource dataSource;

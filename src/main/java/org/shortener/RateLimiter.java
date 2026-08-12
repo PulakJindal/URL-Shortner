@@ -1,4 +1,4 @@
-package org.example;
+package org.shortener;
 
 import java.time.Duration;
 import java.time.Instant;

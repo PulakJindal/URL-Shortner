@@ -1,4 +1,4 @@
-package org.example;
+package org.shortener;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

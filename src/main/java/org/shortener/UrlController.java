@@ -1,14 +1,14 @@
-package org.example;
+package org.shortener;
 
 import io.javalin.http.Context;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
-import static org.example.EnvUtil.getEnvOrDefault;
 
 public class UrlController {
     private final UrlRepository repo;
     private final UrlService service;
+    private static final String BASE_URL = EnvUtil.getEnvOrDefault("BASE_URL", "http://localhost:7070");
 
     public UrlController(UrlRepository repo, UrlService service){
         this.repo = repo;
@@ -29,7 +29,7 @@ public class UrlController {
                 ? OffsetDateTime.now().plusSeconds(req.expiresInSecond)
                 : null;
         String code = service.createShortUrl(req.url, expiresAt, repo);
-        ctx.json(Map.of("shortUrl", getEnvOrDefault("BASE_URL", "http://localhost:7070")+code));
+        ctx.json(Map.of("shortUrl", BASE_URL+code));
     }
 
     public void redirect(Context ctx){

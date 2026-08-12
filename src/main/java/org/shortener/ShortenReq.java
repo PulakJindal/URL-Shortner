@@ -1,4 +1,4 @@
-package org.example;
+package org.shortener;
 
 public class ShortenReq {
     public String url;

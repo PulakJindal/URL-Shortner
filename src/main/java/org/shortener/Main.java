@@ -1,4 +1,4 @@
-package org.example;
+package org.shortener;
 
 import io.javalin.Javalin;
 
