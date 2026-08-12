@@ -1,5 +1,7 @@
 package org.shortener;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,9 +9,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class UrlRepository {
     private final DataSource dataSource;
+    Cache<String, UrlRecord> cache = Caffeine.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .maximumSize(10_000)
+            .build();
 
     public UrlRepository(DataSource dataSource){
         this.dataSource = dataSource;
@@ -38,6 +45,8 @@ public class UrlRepository {
     }
 
     public Optional<UrlRecord> findByShortCode(String shortCode){
+        UrlRecord cacheData = cache.getIfPresent(shortCode);
+        if(cacheData != null) return Optional.of(cacheData);
         String sql = "SELECT long_url, expires_at FROM urls WHERE short_code = ?";
         try(Connection conn = dataSource.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)){
@@ -47,6 +56,7 @@ public class UrlRepository {
                     UrlRecord record = new UrlRecord();
                     record.longUrl = rs.getString("long_url");
                     record.expiresAt = rs.getObject("expires_at", OffsetDateTime.class);
+                    cache.put(shortCode, record);
                     return Optional.of(record);
                 }
                 return Optional.empty();
